@@ -21,6 +21,62 @@ app.add_middleware(
 )
 
 
+def build_follow_up_decision(payload: dict[str, Any]) -> dict[str, Any]:
+    agent = payload.get("agent", {}) or {}
+    purchase_order = payload.get("purchase_order", {}) or {}
+    follow_up_policy = payload.get("follow_up_policy", {}) or {}
+    supplier_name = purchase_order.get("supplier", "Supplier")
+    status = str(purchase_order.get("status", "") or "").strip().lower()
+    priority = str(purchase_order.get("priority", "") or "").strip().lower()
+    production_impact = str(purchase_order.get("productionImpact", "") or "").strip().lower()
+    alternative_supplier = str(purchase_order.get("alternativeSupplier", "No") or "No").strip().lower()
+
+    reasons: list[str] = []
+
+    if any(keyword in status for keyword in ["awaiting acknowledgement", "pending", "not acknowledged", "awaiting"]):
+        reasons.append("The purchase order is still awaiting acknowledgement from the supplier.")
+
+    if "delay" in status or "late" in status:
+        reasons.append("The order status indicates a delay or lateness risk.")
+
+    if priority in {"critical", "high"}:
+        reasons.append("The order priority is high, so supplier follow-up is urgent.")
+
+    if production_impact in {"high", "critical"}:
+        reasons.append("The production impact is significant, which increases the need for immediate follow-up.")
+
+    if alternative_supplier == "no":
+        reasons.append("No alternative supplier is configured, so the current supplier needs a clear update.")
+
+    if follow_up_policy.get("escalateDeliveryDelay"):
+        reasons.append("The configured policy says delivery-delay escalation should be enabled.")
+
+    if not reasons:
+        return {
+            "call_happened": False,
+            "decision": "not_triggered",
+            "reasons": [
+                "No follow-up trigger was found from the current purchase-order inputs, so no supplier call was flagged.",
+            ],
+            "supplier_message": (
+                f"No supplier alert was required for {supplier_name}. The current purchase-order data does not show an acknowledgement gap, delivery risk, or escalation condition."
+            ),
+        }
+
+    alert_message = (
+        f"Supplier follow-up was triggered for {supplier_name} because: "
+        + " ".join(reasons)
+        + f" The agent should notify the supplier that the PO requires acknowledgement and/or delivery confirmation."
+    )
+
+    return {
+        "call_happened": True,
+        "decision": "triggered",
+        "reasons": reasons,
+        "supplier_message": alert_message,
+    }
+
+
 @app.get("/health")
 async def health() -> dict[str, Any]:
     return {
@@ -40,6 +96,8 @@ async def process(payload: dict[str, Any]) -> dict[str, Any]:
 
     provider = str(llm_config.get("provider", "OpenAI") or "OpenAI")
     model = str(llm_config.get("model", "gpt-4o-mini") or "gpt-4o-mini")
+
+    decision = build_follow_up_decision(payload)
 
     summary = {
         "status": "success",
@@ -72,6 +130,7 @@ async def process(payload: dict[str, Any]) -> dict[str, Any]:
             }
             for subagent in subagents
         ],
+        "decision": decision,
         "note": "This Vaadanamb backend uses mock logic by default. Add an API key in the LLM settings to enable live generation.",
     }
 
@@ -84,7 +143,7 @@ async def process(payload: dict[str, Any]) -> dict[str, Any]:
             "ai_generation": {
                 "enabled": False,
                 "mode": "mock",
-                "message": "No API key provided. Using mock follow-up generation.",
+                "message": summary["decision"]["supplier_message"],
             },
         }
 
@@ -152,6 +211,14 @@ async def process(payload: dict[str, Any]) -> dict[str, Any]:
                 "provider": provider,
                 "model": model,
                 "message": generated_message,
+            },
+            "decision": {
+                **summary["decision"],
+                "supplier_message": (
+                    generated_message
+                    if summary["decision"]["call_happened"]
+                    else summary["decision"]["supplier_message"]
+                ),
             },
             "note": "Live OpenAI-compatible LLM generation was used because an API key was provided in the LLM settings.",
         }
