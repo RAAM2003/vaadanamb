@@ -57,7 +57,7 @@ const initialState = {
   },
   llm: {
     provider: "OpenAI",
-    model: "IndicTrans2",
+    model: "gpt-4o-mini",
     apiKey: "",
     baseUrl: "https://api.openai.com/v1",
   },
@@ -95,9 +95,9 @@ const supplierProfiles = [
 ];
 
 const modelOptionsByProvider: Record<string, readonly string[]> = {
-  OpenAI: ["IndicTrans2"],
-  "Azure OpenAI": ["IndicTrans2"],
-  OpenRouter: ["IndicTrans2"],
+  OpenAI: ["gpt-4o-mini", "gpt-4.1-mini", "gpt-4o"],
+  "Azure OpenAI": ["gpt-4o-mini", "gpt-4.1-mini"],
+  OpenRouter: ["openai/gpt-4o-mini", "openai/gpt-4o", "meta-llama/llama-3.1-8b-instruct"],
   Custom: ["Custom model (subscription required)"],
 };
 
