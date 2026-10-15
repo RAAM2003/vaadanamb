@@ -23,3 +23,324 @@ textarea {
 textarea {
   font-family: Arial, sans-serif;
 }
+
+#domainbridge-app {
+  min-height: 100vh;
+  padding: 0 32px 72px !important;
+  background: #fbfaf7 !important;
+  color: #344237 !important;
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+#domainbridge-app > div {
+  width: min(1240px, 100%);
+  max-width: none !important;
+  gap: 0 !important;
+  margin-inline: auto;
+}
+
+.prototype-brandbar {
+  display: flex;
+  min-height: 78px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 1px solid #eeede7;
+}
+
+.prototype-brandbar a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #344237;
+  text-decoration: none;
+}
+
+.prototype-brandbar a>span {
+  display: grid;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  border-radius: 10px 10px 10px 3px;
+  background: #446d56;
+  color: #fff;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.prototype-brandbar a>strong {
+  color: #263a2e;
+  font-size: 16px;
+  letter-spacing: -.07em;
+}
+
+.prototype-brandbar a>strong span {
+  color: #718675;
+  font-weight: 400;
+}
+
+.prototype-brandbar>span {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #788276;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: .14em;
+}
+
+.prototype-brandbar i {
+  width: 18px;
+  height: 1px;
+  background: #789273;
+}
+
+#domainbridge-app .domainbridge-header {
+  gap: 24px !important;
+  margin-top: 38px;
+  padding: clamp(26px, 5vw, 52px) !important;
+  border: 1px solid #e4e6dc !important;
+  border-radius: 7px !important;
+  background: linear-gradient(145deg, #f1f5ed, #fbfaf7 68%) !important;
+  box-shadow: 0 20px 65px rgba(42, 60, 43, .08) !important;
+  color: #344237 !important;
+}
+
+#domainbridge-app h1,
+#domainbridge-app h2,
+#domainbridge-app h3 {
+  color: #2b3c30 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-weight: 400 !important;
+  letter-spacing: -.035em !important;
+}
+
+#domainbridge-app .domainbridge-header h1 {
+  margin-top: 14px !important;
+  font-size: clamp(38px, 5.5vw, 65px) !important;
+  line-height: 1.02 !important;
+}
+
+#domainbridge-app .domainbridge-header p {
+  color: #737970 !important;
+}
+
+#domainbridge-app .domainbridge-header p:first-child {
+  color: #697866 !important;
+  font-size: 9px !important;
+  letter-spacing: .16em !important;
+}
+
+#domainbridge-app [style*="background"] {
+  background: #fff !important;
+}
+
+#domainbridge-app [style*="color"] {
+  color: #596255 !important;
+}
+
+#domainbridge-app [style*="border"] {
+  border-color: #e4e6dc !important;
+}
+
+#domainbridge-app [style*="border-radius"] {
+  border-radius: 5px !important;
+}
+
+#domainbridge-app [style*="box-shadow"] {
+  box-shadow: 0 8px 24px rgba(42, 60, 43, .05) !important;
+}
+
+#domainbridge-app .workflow-metrics {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 13px !important;
+  margin-block: 16px 28px;
+}
+
+#domainbridge-app .supplier-source-panel,
+#domainbridge-app .workflow-configuration-grid>div,
+#domainbridge-app .workflow-configuration-grid>div>div,
+#domainbridge-app section[style*="previewCard"] {
+  border: 1px solid #e5e8df !important;
+  border-radius: 6px !important;
+  background: #fff !important;
+  box-shadow: 0 8px 24px rgba(42, 60, 43, .04) !important;
+}
+
+#domainbridge-app .supplier-source-panel {
+  margin-bottom: 18px;
+  padding: 22px !important;
+}
+
+#domainbridge-app .supplier-source-grid {
+  grid-template-columns: minmax(220px, .7fr) minmax(0, 1.3fr) !important;
+}
+
+#domainbridge-app .supplier-summary-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+#domainbridge-app .workflow-configuration-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+#domainbridge-app .workflow-configuration-grid h2,
+#domainbridge-app .supplier-source-panel h2,
+#domainbridge-app section[style*="previewCard"] h2 {
+  font-size: 24px !important;
+}
+
+#domainbridge-app .workflow-configuration-grid>div {
+  padding: 22px !important;
+}
+
+#domainbridge-app input,
+#domainbridge-app select,
+#domainbridge-app textarea {
+  border: 1px solid #e2e5dc !important;
+  border-radius: 4px !important;
+  background: #fff !important;
+  color: #374739 !important;
+}
+
+#domainbridge-app input:focus,
+#domainbridge-app select:focus,
+#domainbridge-app textarea:focus {
+  border-color: #789273 !important;
+  outline: 2px solid rgba(120, 146, 115, .18) !important;
+  outline-offset: 1px;
+}
+
+#domainbridge-app button {
+  border: 1px solid #243c31 !important;
+  border-radius: 4px !important;
+  background: #243c31 !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  transition: background .2s, transform .2s;
+}
+
+#domainbridge-app button:hover {
+  transform: translateY(-1px);
+  background: #355844 !important;
+}
+
+#domainbridge-app button[aria-pressed="false"] {
+  border-color: #e2e5dc !important;
+  background: #f4f6ef !important;
+  color: #435d49 !important;
+}
+
+#domainbridge-app button[aria-pressed="true"] {
+  background: #446d56 !important;
+}
+
+#domainbridge-app label[style*="width: fit-content"] {
+  border: 1px solid #243c31 !important;
+  border-radius: 4px !important;
+  background: #243c31 !important;
+  color: #fff !important;
+}
+
+#domainbridge-app pre {
+  border: 1px solid #e4e6dc !important;
+  border-radius: 5px !important;
+  background: #f4f5ef !important;
+  color: #3c4c3d !important;
+  font-size: 12px !important;
+  line-height: 1.7 !important;
+}
+
+#domainbridge-app [style*="position: fixed"] {
+  background: rgba(34, 48, 37, .38) !important;
+}
+
+@media (max-width: 760px) {
+  #domainbridge-app {
+    padding: 0 18px 48px !important;
+  }
+
+  .prototype-brandbar {
+    min-height: 68px;
+  }
+
+  .prototype-brandbar>span {
+    font-size: 7px;
+  }
+
+  #domainbridge-app .domainbridge-header {
+    margin-top: 24px;
+    padding: 24px !important;
+  }
+
+  #domainbridge-app .domainbridge-header>div:first-child {
+    align-items: flex-start;
+  }
+
+  #domainbridge-app .domainbridge-header>div:first-child>div:last-child {
+    align-items: flex-start !important;
+  }
+
+  #domainbridge-app .workflow-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #domainbridge-app .supplier-source-grid,
+  #domainbridge-app .workflow-configuration-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+}
+
+@media (max-width: 440px) {
+  #domainbridge-app {
+    padding-inline: 14px !important;
+  }
+
+  #domainbridge-app .domainbridge-header {
+    padding: 20px !important;
+  }
+
+  #domainbridge-app .workflow-metrics,
+  #domainbridge-app .supplier-summary-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  #domainbridge-app .supplier-source-panel,
+  #domainbridge-app .workflow-configuration-grid>div {
+    padding: 17px !important;
+  }
+}
+
+#domainbridge-app header.domainbridge-header {
+  background: linear-gradient(145deg, #f1f5ed, #fbfaf7 68%) !important;
+}
+
+#domainbridge-app h1,
+#domainbridge-app h2,
+#domainbridge-app h3 {
+  color: #2b3c30 !important;
+}
+
+#domainbridge-app h1[style*="color"] {
+  color: #293c30 !important;
+}
+
+#domainbridge-app button[style*="background"] {
+  border-color: #243c31 !important;
+  background: #243c31 !important;
+  color: #fff !important;
+}
+
+#domainbridge-app button[aria-pressed="false"] {
+  border-color: #e2e5dc !important;
+  background: #f4f6ef !important;
+  color: #435d49 !important;
+}
+
+#domainbridge-app button[aria-pressed="true"] {
+  border-color: #446d56 !important;
+  background: #446d56 !important;
+  color: #fff !important;
+}

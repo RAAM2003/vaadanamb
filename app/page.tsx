@@ -4,25 +4,25 @@ import { useMemo, useState, type ChangeEvent, type CSSProperties, type ReactNode
 
 const initialState = {
   agent: {
-    name: "Procurement Follow-up Agent",
-    role: "Supplier coordination assistant",
-    company: "Vaadanamb Procurement",
+    name: "Supplier Follow-up Assistant",
+    role: "Purchase-order coordination agent",
+    company: "DomainBridge AI",
     region: "India",
     workflowMode: "multi-agent",
-    instructions: "You are the procurement follow-up assistant. Coordinate with suppliers, prepare concise reminders, and escalate delivery risks only when the policy requires it.",
+    instructions: "You are a procurement follow-up assistant. Review purchase-order status, supplier context, delivery risk, and configured follow-up policy. Prepare concise, professional supplier messages for human review. Never claim a message has been sent.",
     tools: [
       {
         id: 1,
         name: "python_hello",
         type: "python",
-        code: "print('BHASHA SETU agent is ready.')",
+        code: "print('Supplier follow-up workflow is ready.')",
         premium_only: false,
       },
       {
         id: 2,
         name: "python_premium_summary",
         type: "python",
-        code: "print('Premium supplier summary generated.')",
+        code: "print('Supplier operations summary generated.')",
         premium_only: true,
       },
     ],
@@ -101,6 +101,50 @@ const modelOptionsByProvider: Record<string, readonly string[]> = {
   Custom: ["Custom model (subscription required)"],
 };
 
+const buildMockDemoResult = (currentPayload: any) => ({
+  status: "success",
+  mode: currentPayload.agent?.workflowMode ?? "multi-agent",
+  provider: currentPayload.llm?.provider ?? "OpenAI",
+  model: currentPayload.llm?.model ?? "gpt-4o-mini",
+  agent_name: currentPayload.agent?.name ?? "Procurement Follow-up Agent",
+  po_number: currentPayload.purchase_order?.poNumber ?? "",
+  supplier: currentPayload.purchase_order?.supplier ?? "",
+  required_inputs: [
+    "PO acknowledgement",
+    "Quantity confirmation",
+    "Delivery-date confirmation",
+    "Dispatch date",
+    "Shipment/tracking details",
+    "Delay reason",
+    "Revised delivery date",
+  ],
+  follow_up_plan: {
+    first_reminder_after_hours: Number(currentPayload.follow_up_policy?.firstReminderAfterHours ?? 24),
+    second_reminder_after_hours: Number(currentPayload.follow_up_policy?.secondReminderAfterHours ?? 24),
+    maximum_reminders: Number(currentPayload.follow_up_policy?.maximumReminders ?? 3),
+    escalate_delivery_delay: Boolean(currentPayload.follow_up_policy?.escalateDeliveryDelay),
+    require_human_approval_for_changes: Boolean(currentPayload.follow_up_policy?.requireHumanApprovalForChanges),
+  },
+  subagents: (currentPayload.subagents ?? []).map((subagent: { name?: string; description?: string }) => ({
+    name: subagent.name ?? "Subagent",
+    description: subagent.description ?? "",
+  })),
+  note: "Frontend mock demo mode is active. The backend is optional for presentation purposes.",
+  ai_generation: {
+    enabled: true,
+    mode: "mock-demo",
+    message: "Demo mode enabled: the app generated a sample supplier follow-up response locally.",
+  },
+  generated_response: {
+    summary: `Demo follow-up prepared for ${currentPayload.purchase_order?.supplier ?? "supplier"}.`,
+    reminders: [
+      "Reminder 1: Confirm acknowledgement and production schedule.",
+      "Reminder 2: Share dispatch status and expected logistics date.",
+      "Reminder 3: Escalate to the appropriate contact if delivery slips further.",
+    ],
+  },
+});
+
 export default function Home() {
   const [form, setForm] = useState(initialState);
   const [result, setResult] = useState<string | null>(null);
@@ -109,21 +153,19 @@ export default function Home() {
   const [uploadSummary, setUploadSummary] = useState("No CSV or file imported yet.");
   const [uploadPreview, setUploadPreview] = useState<Record<string, string>[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<"free" | "premium">("free");
-  const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [isFlowEditorOpen, setIsFlowEditorOpen] = useState(false);
   const [isFreeInfoModalOpen, setIsFreeInfoModalOpen] = useState(false);
   const [agentFlowSteps, setAgentFlowSteps] = useState([
     { id: 1, title: "Capture context", description: "Load purchase order, supplier, and delivery data." },
-    { id: 2, title: "Generate reminders", description: "Prepare polite, classroom-friendly follow-up messages." },
+    { id: 2, title: "Prepare supplier follow-up", description: "Draft clear, professional supplier reminders for human review." },
     { id: 3, title: "Escalate risk", description: "Flag delays and request approval when a critical issue is detected." },
   ]);
 
-  const isDarkTheme = theme === "dark";
-  const pageStyle = isDarkTheme ? styles.page : styles.pageLight;
-  const headerStyle = isDarkTheme ? styles.header : styles.headerLight;
-  const eyebrowStyle = isDarkTheme ? styles.eyebrow : styles.eyebrowLight;
-  const titleStyle = isDarkTheme ? styles.title : styles.titleLight;
-  const subtitleStyle = isDarkTheme ? styles.subtitle : styles.subtitleLight;
+  const pageStyle = styles.pageLight;
+  const headerStyle = styles.headerLight;
+  const eyebrowStyle = styles.eyebrowLight;
+  const titleStyle = styles.titleLight;
+  const subtitleStyle = styles.subtitleLight;
 
   const overviewCards = [
     {
@@ -132,13 +174,13 @@ export default function Home() {
       tone: "blue",
     },
     {
-      label: "LLM Provider",
-      value: form.llm.provider,
+      label: "Supplier Language",
+      value: form.supplier.preferredLanguage,
       tone: "purple",
     },
     {
-      label: "Supplier",
-      value: form.purchaseOrder.supplier,
+      label: "Supplier Contact",
+      value: form.supplier.contactPerson,
       tone: "green",
     },
     {
@@ -365,33 +407,36 @@ export default function Home() {
         body: JSON.stringify(payload),
       });
 
+      if (!response.ok) {
+        throw new Error(`Backend responded with status ${response.status}`);
+      }
+
       const data = await response.json();
       setResult(JSON.stringify(data, null, 2));
     } catch (error) {
-      setResult(
-        JSON.stringify(
-          {
-            status: "error",
-            message: error instanceof Error ? error.message : "Unknown error",
-          },
-          null,
-          2,
-        ),
-      );
+      const mockDemoResult = buildMockDemoResult(payload);
+      setResult(JSON.stringify(mockDemoResult, null, 2));
     } finally {
       setIsProcessing(false);
     }
   };
 
   return (
-    <main style={pageStyle}>
+    <main id="domainbridge-app" style={pageStyle}>
       <div style={styles.container}>
-        <header style={headerStyle}>
+        <div className="prototype-brandbar">
+          <a aria-label="MakeLifeEasy home" href="https://makelifeeasy.co.in/">
+            <span aria-hidden="true">m</span>
+            <strong>make<span>life</span>easy</strong>
+          </a>
+          <span>DOMAINBRIDGE AI <i /> WORKFLOW STUDIO</span>
+        </div>
+        <header className="domainbridge-header" style={headerStyle}>
           <div style={styles.headerContent}>
             <div>
-              <p style={eyebrowStyle}>VAADHANAMB</p>
-              <h1 style={titleStyle}>Procurement Agent Configuration</h1>
-              <p style={subtitleStyle}>Configure supplier coordination, follow-up policies, and the LLM stack in one polished workspace.</p>
+              <p style={eyebrowStyle}>DOMAINBRIDGE AI · BUSINESS WORKFLOW DEMO</p>
+              <h1 style={titleStyle}>Procurement Follow-up<br />Assistant</h1>
+              <p style={subtitleStyle}>Review purchase-order status, supplier context, and delivery risk; prepare consistent follow-up messages for a person to review.</p>
             </div>
 
             <div style={styles.headerActions}>
@@ -402,6 +447,7 @@ export default function Home() {
 
               <div style={styles.planSwitcher}>
                 <button
+                  aria-pressed={selectedPlan === "free"}
                   type="button"
                   onClick={() => setSelectedPlan("free")}
                   style={selectedPlan === "free" ? styles.planButtonActive : styles.planButton}
@@ -409,28 +455,12 @@ export default function Home() {
                   Free Demo
                 </button>
                 <button
+                  aria-pressed={selectedPlan === "premium"}
                   type="button"
                   onClick={() => setSelectedPlan("premium")}
                   style={selectedPlan === "premium" ? styles.planButtonActivePremium : styles.planButtonPremium}
                 >
                   Premium Mock
-                </button>
-              </div>
-
-              <div style={styles.themeSwitcher}>
-                <button
-                  type="button"
-                  onClick={() => setTheme("dark")}
-                  style={theme === "dark" ? styles.themeButtonActive : styles.themeButton}
-                >
-                  Dark
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setTheme("light")}
-                  style={theme === "light" ? styles.themeButtonActive : styles.themeButton}
-                >
-                  Light
                 </button>
               </div>
 
@@ -456,7 +486,7 @@ export default function Home() {
           </div>
         </header>
 
-        <section style={styles.metricsGrid}>
+        <section className="workflow-metrics" style={styles.metricsGrid}>
           {overviewCards.map((card) => (
             <div key={card.label} style={{ ...styles.metricCard, background: card.tone === "blue" ? "linear-gradient(135deg, rgba(47, 74, 140, 0.88) 0%, rgba(42, 54, 96, 0.92) 100%)" : card.tone === "purple" ? "linear-gradient(135deg, rgba(78, 58, 132, 0.9) 0%, rgba(42, 44, 92, 0.92) 100%)" : card.tone === "green" ? "linear-gradient(135deg, rgba(28, 76, 75, 0.9) 0%, rgba(22, 56, 54, 0.93) 100%)" : "linear-gradient(135deg, rgba(111, 80, 46, 0.86) 0%, rgba(74, 55, 38, 0.92) 100%)" }}>
               <span style={styles.metricLabel}>{card.label}</span>
@@ -465,7 +495,7 @@ export default function Home() {
           ))}
         </section>
 
-        <section style={styles.dataSourceHeader}>
+        <section className="supplier-source-panel" style={styles.dataSourceHeader}>
           <div style={styles.dataSourceTopRow}>
             <div style={styles.dataSourceText}>
               <p style={styles.eyebrow}>Supplier</p>
@@ -490,7 +520,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div style={styles.dataSourceContent}>
+          <div className="supplier-source-grid" style={styles.dataSourceContent}>
             <label style={styles.dropdownField}>
               <span style={styles.dropdownLabel}>Supplier</span>
               <select
@@ -515,7 +545,7 @@ export default function Home() {
                 <span style={styles.dataSourceSummary}>{uploadSummary}</span>
               </div>
 
-              <div style={styles.supplierSummaryGrid}>
+              <div className="supplier-summary-grid" style={styles.supplierSummaryGrid}>
                 <div>
                   <p style={styles.supplierLabel}>Contact person</p>
                   <strong style={styles.supplierValue}>{selectedSupplierProfile.contactPerson}</strong>
@@ -537,7 +567,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section style={styles.grid}>
+        <section className="workflow-configuration-grid" style={styles.grid}>
           <div style={styles.card}>
             <h2 style={styles.cardTitle}>1. Agent Information</h2>
 
@@ -808,7 +838,7 @@ export default function Home() {
                     ? "Premium mock account enables advanced agent controls, custom provider setup, and premium workflow options."
                     : form.llm.provider === "Custom"
                       ? "Custom model with API key support is available only on the subscribed plan."
-                      : "Free demo uses IndicTrans2 for translation."}
+                      : "Free demo uses mock supplier follow-up logic."}
                 </span>
               </div>
               <Field label="LLM Key">
